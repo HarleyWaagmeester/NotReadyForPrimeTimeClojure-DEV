@@ -1,0 +1,77 @@
+[:head
+[:link {:rel "stylesheet", :href "css/dhtmlwindow.css", :type "text/css"}]
+[:link {:rel "stylesheet", :href "css/ip.css", :type "text/css"}]
+[:script {:type "text/javascript", :src "js/dhtmlwindow.js"}]
+
+[:script "function  create_ports(){
+_create_window('port1', 'port1-menu-data', 'width=350px, height=500px, left=10px, top=10px, resize=1, scrolling=1' );
+_create_window('port2', 'port2-menu-data', 'width=350px, height=500px, left=370px, top=10px, resize=1, scrolling=1' );
+_create_window('port3', 'port3-menu-data', 'width=350px, height=500px, left=700px, top=10px, resize=1, scrolling=1' );
+_create_window('port4', 'port4-menu-data', 'width=350px, height=500px, left=1000px, top=10px, resize=1, scrolling=1' )};"]]
+
+
+[:body {:onload "create_ports()"}
+
+
+[:div
+{:id "port1-menu-data" :style "display:none"}
+[:a {:href "http://localhost:7777/wireless-network-activate"}  "Activate Network-Manager"]
+[:br]
+[:a {:href "http://localhost:7777/wireless-network-deactivate"}  "Deactivate Network-Manager"]
+[:br]
+[:a {:href "http://localhost:7777/openvpn-tunnel-start"}  "Use the VPN"]
+[:br]
+[:a {:href "http://localhost:7777/openvpn-tunnel-stop"}  "Stop using the VPN"]
+[:br]
+[:a {:href "http://localhost:7777/install-ath9k-module"}  "Install-ath9k-module"]
+[:br]
+[:a {:href "http://localhost:7777/remove-ath9k-module"}  "Remove-ath9k-module"]
+[:br]
+[:a {:href "http://localhost:7777/install-rtl8187-module"}  "Install-rtl8187-module"]
+[:br]
+[:a {:href "http://localhost:7777/remove-rtl8187-module"}  "Remove-rtl8187-module"]
+]
+
+
+[:div
+{:id "port2-menu-data" :style "display:none"}
+[:a {:href "http://localhost:7777/iwconfig"}  "iwconfig"]
+[:br]
+[:a {:href "http://localhost:7777/iwconfig-zenity"}  "iwconfig-zenity"]
+[:br]
+[:a {:href "http://localhost:7777/ifconfig"}  "ifconfig"]
+[:br]
+[:a {:href "http://localhost:7777/ip-route"}  "ip-route"]
+[:br]
+[:a {:href "http://localhost:7777/iwlist-scan-wlan0"}  "iwlist-scan-wlan0"]
+[:br]
+[:a {:href "http://localhost:7777/iwlist-scan-wlan1"}  "iwlist-scan-wlan1"]
+[:br]
+[:a {:href "http://localhost:7777/reload_w"}  "reload_w"]
+[:br]
+[:a {:href "http://localhost:7777/visualize-system-environment"} "visualize-system-environment"]
+]
+
+
+[:div
+{:id "port3-menu-data" :style "display:none"}
+[:a {:href "http://localhost/Programming/Clojure/clojure-gh-pages"}  "Clojure Docs"]
+[:br]
+[:a {:href "http://localhost:7777/programming-clojure-2nd-edition"}  "Programming Clojure 2nd Edition"]
+]
+
+
+[:div
+{:id "port4-menu-data" :style "display:none"}
+[:a {:href "http:///localhost:7777/demo.htm"}  "dhtmlwindow"]
+[:br]
+[:a {:href "http:///localhost:7777/stellar"}  "stellar"]
+[:br]
+[:a {:href "http://localhost:7777/git"}  "GIT"]
+[:br]
+[:a {:href "http://localhost:7777/print-classpath"}  "print-classpath"]
+[:br]
+[:a {:href "http://localhost:7777/print-resource-file"}  "print-resource-file"]
+[:br]
+[:a {:href "http://localhost:7777/pwd"}  "pwd"]
+]]

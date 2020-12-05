@@ -1,0 +1,16 @@
+---------------------------------------------------------------------------------------
+clojure examples of printf style debugging::
+
+	 (spit "app2.log" (with-out-str(println request)) :append false)
+	 (spit "app2.log" (io/resource (subs (str(get request :uri))1)):append true)
+---------------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------
+:::: use doseq to utilize side effects:
+:::: use for to return the resultant data
+
+map isn't the same in this regard
+
+(doseq [keyval (sort(ns-publics 'sc3.app2))] (println (key keyval)))
+----------------------------------------------------------------------------------

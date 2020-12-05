@@ -1,0 +1,133 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>A Simple, Flexible, Responsive, Flexbox-Based Modal</title>
+  <!-- <link rel="stylesheet" type="text/css" href="css/V3.css"> -->
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-XdYbMnZ/QjLh6iI4ogqCTaIjrFk87ip+ekIjefZch0Y+PvJ8CDYtEs1ipDmPorQ+" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/css/aaa.css">
+  <script src="/js/script.js"></script>
+
+</head>
+
+<body>
+  <div class="wrapper">
+    <div class="holdmystuff">
+      <div class="holder_svg">
+        <!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In  -->
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" x="0px" y="0px" viewBox="0 0 325 233" enable-background="new 0 0 325 233" xml:space="preserve">
+<defs>
+</defs>
+<polygon fill="#FFFFFF" stroke="#B3B3B3" stroke-width="2" stroke-miterlimit="10" points="295,32 31.4,32 1,32 1,90 1,110 1,150 
+	1,170 1,232 31.4,232 295,232 301,232 301,170 301,150 301,110 301,90 301,32 "/>
+<rect x="11" y="42" fill="#ADADAD" width="123" height="68"/>
+<rect x="11" y="196" fill="#999999" width="280" height="26"/>
+<rect x="141" y="42" fill="#999999" width="149" height="23"/>
+<rect x="141" y="73" fill="#C2C2C2" width="149" height="37"/>
+<rect x="11" y="153" fill="#D6D6D6" width="280" height="35"/>
+<rect x="11" y="130" fill="#EBEBEB" width="280" height="5"/>
+<rect x="311" y="42" fill="#999999" width="14" height="23"/>
+<rect x="311" y="74" fill="#999999" width="14" height="23"/>
+<rect x="311" y="106" fill="#999999" width="14" height="23"/>
+<rect x="48" fill="#999999" width="212" height="22"/>
+<path fill="#D1D1D1" d="M72,61.5c22.8,0,44.1,6.7,62,18.1V42H11v37C28.7,67.9,49.6,61.5,72,61.5z"/>
+<path fill="#C2C2C2" d="M151,209.5c-53,0-101.7-1.6-140-4.3V222h280v-16.8C252.7,207.9,204,209.5,151,209.5z"/>
+</svg>
+
+      </div>
+      <h2>A Simple, Flexible, Responsive, Flexbox-Based Modal</h2>
+<p>Passing data-attributes and havin' fun!
+      
+      <ul>
+        <li><a class="sm_open" data-modal="examplePlain" data-effect="pushdown">Modal (Plain 'Ol Vanilla')</a></li>
+        <li><a class="sm_open" data-modal="exampleAdvanced" data-effect="pushup" data-icons="is_right" data-header-type="detached">Modal (w/Detached Header and Right Icon Menu)</a></li>
+        <li><a class="sm_open" data-modal="exampleAdvanced" data-effect="pushup" data-icons="is_right">Modal (w/Header and Right Icon Menu)</a></li>
+        <li><a class="sm_open" data-modal="exampleAdvanced" data-effect="pushup" data-icons="is_left">Modal (w/Header and Left Icon Menu)</a></li>
+        <li>
+          <a class="sm_open" data-modal="exampleData" data-effect="pushdown" data-header="#1 This header is from the link" data-overlay="none" data-content="This is a sample HTML string being passed with a data-attribute... <p><h3>Super easy to change, simply by tweaking the button launching the modal.</h3></p>"
+            data-wrapper-color="green">Modal (Passing Data-Attributes w/Transparent Overlay)
+				</a>
+        </li>
+        <li>
+          <a class="sm_open" data-modal="exampleData" data-effect="pushdown" data-header="#1 This header is from the link" data-overlay="red" data-content="This is a sample HTML string being passed with a data-attribute... <p><h3>Super easy to change, simply by tweaking the button launching the modal.</h3></p>"
+            data-wrapper-color="red">Modal (Passing Data-Attributes w/Eye-Searing Red Overlay Color)
+				</a>
+        </li>
+        <li>
+          <a class="sm_open" data-modal="exampleData" data-effect="pushup" data-header="#1 This header is from the link" data-content="This is a sample HTML string being passed with a data-attribute... <p><h3>Super easy to change, simply by tweaking the button launching the modal.</h3></p>"
+            data-wrapper-color="tan">Modal (Passing Data-Attributes w/HTML)
+				</a>
+        </li>
+        <li>
+          <a class="sm_open" data-modal="exampleData" data-effect="pushdown" data-header="#2 This header is from the link" data-content="....and this is a second sample string being passed with a data-attribute attached to the button." data-wrapper-color="red">Modal (Passing Data-Attributes #1)
+				</a>
+        </li>
+        <li>
+          <a class="sm_open" data-modal="exampleData" data-effect="pushdown" data-header="#3 This header is from the link" data-content="...and this is yet another sample string being passed with a data-attribute attached to the button. I'm just typing this sentence to give a little more bulk to the modal...not filling it with important info, but making it stand out from the other examples a bit more."
+            data-wrapper-color="green">Modal (Passing Data-Attributes #2)
+				</a>
+        </li>
+      </ul>
+
+    </div>
+
+
+    <div class="slim_modal" id="examplePlain">
+      <div class="sm_content">
+        <div class="sm_content_inner_wrap">
+          <div class="sm_area_top">
+            <h3>Example Modal Content
+								<span>...for this CSS Demo</span>
+							</h3>
+          </div>
+          <div class="sm_area_bottom">
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nihil asperiores recusandae odio distinctio earum voluptatibus, quisquam repellendus voluptas quaerat quis est totam, optio quia, molestias voluptatum error libero pariatur!</p>
+          </div>
+          <a class="sm_close sm_close_button">CLOSE</a>
+        </div>
+      </div>
+    </div>
+    <div class="slim_modal" id="exampleAdvanced">
+      <div class="sm_content">
+        <div class="sm_header">Hi. I'm a Header.</div>
+        <div class="sm_icon_menu">
+          <ul>
+            <li class="sm_close"><i class="fa fa-times fa-fw "></i></li>
+            <li><i class="fa fa-gear fa-fw"></i></li>
+            <li><i class="fa fa-plus fa-fw"></i></li>
+            <li><i class="fa fa-sitemap fa-fw"></i></li>
+            <li><i class="fa fa-user fa-fw"></i></li>
+          </ul>
+        </div>
+        <div class="sm_content_inner_wrap">
+          <div class="sm_area_top">
+            <h3>Example Modal Content
+							<span>...for this CSS Demo</span>
+						</h3>
+          </div>
+          <div class="sm_area_bottom">
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nihil asperiores recusandae odio distinctio earum voluptatibus, quisquam repellendus voluptas quaerat quis est totam, optio quia, molestias voluptatum error libero pariatur!</p>
+          </div>
+          <div class="sm_close sm_close_button">CLOSE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slim_modal" id="exampleData">
+      <div class="sm_content">
+        <div class="sm_header"></div>
+        <div class="sm_icon_menu is_right">
+          <ul>
+            <li class="sm_close"><i class="fa fa-times fa-fw "></i></li>
+          </ul>
+        </div>
+        <div class="sm_content_inner_wrap">
+          <div class="sm_area_all"></div>
+          <a class="sm_close sm_close_button">CLOSE</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>

@@ -1,0 +1,7 @@
+   (doctype :html4)
+   [:html
+    [:head
+     [:title "w"]
+     [:meta {:http-equiv "refresh" :content "30"}]
+     ]
+    [:body

@@ -1,0 +1,136 @@
+
+body {
+     /* background: linear-gradient( rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75) ), url('../images/background.png'); */
+     background-color: #bbb;
+}
+
+.base {
+    width 100%;
+}
+
+.flexbox {
+    width:100%;
+    display: flex;
+}
+
+/* The contents of this element are centered */
+.flexbox_center_contents {
+    width:100%;
+    display: flex;
+    justify-content: center;
+}
+
+.div33 {
+    display: inline-block;
+    width: 33.33%;
+    word-wrap: break-word;
+    /* border-style: solid; */
+    /* border-width: 1px; */
+    /* border-color: #000; */
+}
+.div66 {
+    display: inline-block;
+    width: 66%;
+    word-wrap: break-word;
+    /* border-style: solid; */
+    /* border-width: 1px; */
+    /* border-color: #000; */
+}
+.div33_float_left {
+    display: inline-block;
+    width: 33%;
+    /* height: 50%; */
+    float: left;
+    word-wrap: break-word;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #000;
+}
+.div33_float_right {
+    display: inline-block;
+    width: 33%;
+    /* height: 50%; */
+    float: right;
+    word-wrap: break-word;
+    /* border-style: solid; */
+    /* border-width: 1px; */
+    /* border-color: #000; */
+}
+.div66_float_left {
+    display: inline-block;
+    width: 66%;
+    float: left;
+    word-wrap: break-word;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #000;
+}
+.div66_float_right {
+    display: inline-block;
+    width: 66%;
+    float: right;
+    word-wrap: break-word;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #000;
+}
+
+.banner {
+    width 30%;
+    background-color:white;
+    color:green;
+    font-size: large;
+    text-align: center;
+}
+
+.span_green {
+    color: green;
+}
+
+.span_float_left {
+    float: left;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #000;
+
+}
+
+.span_float_right {
+    float: right;
+    /* border-style: solid; */
+    /* border-width: 1px; */
+    /* border-color: #000; */
+}
+
+.block {
+    display: inline-block;
+    background-color: cyan;
+    width: 100%;
+}
+
+p {
+    /* display:inline-block; */
+    /* width: 30%; */
+    /* width: 100px; */
+    background-color:white;
+    color:grey;
+    /* border:1px soild grey; */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #ccc;
+    /* margin: 0 auto; */
+    padding:10px;
+}
+.oval-shape {
+ //   width: 200px;
+ //   height: 100px;
+ background: blue;
+ color:white;
+ -moz-border-radius: 100px / 50px;
+ -webkit-border-radius: 100px / 50px;
+ border-radius: 100px / 50px;
+ padding-left:75px;
+}
