@@ -1,9 +1,14 @@
 (ns sc3.app2
   (:require (clojure
              [pprint :refer :all]))
+
   (:require [ring.adapter.jetty :as jetty])
   (:require [ring.util.response :as r])
+  (:require [ring.util.parsing :refer :all])
   (:require [ring.util.request :as rr])
+;;  (:require [ring.middleware.params :refer :all])
+;;  (:require [ring.middleware. :refer :all])
+;;  (:require [ring.middleware.defaults :refer :all])
   (:require (hiccup
              [core :refer :all]
              [form :refer :all]
@@ -54,10 +59,20 @@
 ;;(def clojure-css-language 1)
 
 
+(defn html_end
+  "Clocss definition"
+  []
+  (println "</html>"))
+
 (defn div
   "Clocss definition"
   []
   (println "<div>"))
+
+(defn div_box
+  "Clocss definition"
+  []
+  (println"<div class='div_box'>"))
 
 (defn div_off
   "Clocss definition"
@@ -118,7 +133,16 @@
   []
   (println"<div class='div66_float_right'>"))
 
-;; Shorthand for span_float_...
+(defn span
+  "Clocss definition"
+  []
+  (println"<span>"))
+
+(defn span_box
+  "Clocss definition"
+  []
+  (println"<span class='span_box'>"))
+
 (defn span_float_left
   "Clocss definition"
   []
@@ -263,13 +287,6 @@
 ;;        (take-while #(not= 0 %) (seq buf))))))
         (-> (r/response (take n buf)) (r/content-type "image/jpeg") )))   ))
 
-(defn- css
-  "Read a text file and return it as a ring response."
-  [request]
-  (if-let [ x (io/resource (subs (str(get request :uri))1))]
-    (r/response  (slurp x))
-    ;;  (r/response (with-out-str (println x)))
-    (-> (r/response "") (r/content-type "text/html")  (r/status 404))))
 
 (defn- js
   "Read a text file and return it as a ring response."
@@ -554,23 +571,398 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 (defn- object-retrieval
   "Given a map of :uri 'filename', return a ring response map."
   [request]
-  (doseq [keyval request] (prn keyval))
+;;  (doseq [keyval request] (prn keyval))
   (->
    (subs (str(get request :uri))1)
    (r/resource-response )))
 
-(defn- file-retrieval
-  "Given a map of :uri 'filename', return the file."
+(defn- html-file
+  "Read a html text file and return it as a ring response."
   [request]
-  (doseq [keyval request] (prn keyval))
-  (->
-   (subs (str(get request :uri))1)
-   (slurp (:body(r/file-response {:uri request})))))
+  (if-let [ x (io/resource (subs (str(get request :uri))1))]
+    (r/response  (slurp x))
+    ;;  (r/response (with-out-str (println x)))
+    (-> (r/response "") (r/content-type "text/html")  (r/status 200))))
 
-(defn page
-  "build a html page"
+(defn- css
+  "Read a css text file and return it as a ring response."
+  [request]
+  (if-let [ x (io/resource (subs (str(get request :uri))1))]
+    (r/response  (slurp x))
+    ;;  (r/response (with-out-str (println x)))
+    (-> (r/response "") (r/content-type "text/css")  (r/status 200))))
+
+(defn- js
+  "Read a js text file and return it as a ring response."
+  [request]
+  (if-let [ x (io/resource (subs (str(get request :uri))1))]
+    (r/response  (slurp x))
+    ;;  (r/response (with-out-str (println x)))
+    (-> (r/response "") (r/content-type "text/javascript")  (r/status 200))))
+
+
+(defn- html-host-preamble
+  "Print a html preamble."
   []
-  (css "ip.css"))
+  (println "<!doctype html>")
+  (println "<html lang=en>")
+  (println "<head><meta charset='utf-8'>")
+  (println "<meta name='description' content='National Software Association Master Tools'>")
+  (println "<meta name='author' content='National Software Association'>")
+  (println "<link rel='stylesheet' href='/css/ip.css'></head>")
+)
+
+;;
+;; Status:   current future
+;; Use Case: invoked as a helper
+;; Purpose:  creates a map of options and arguments from the html request query-string
+;;
+(defn get-query-map
+  "Creates a map of options and arguments from the html request query-string."
+  [request]
+  (->> (str/split (:query-string request) #"&") 
+       (map #(str/split % #"=")) 
+       (map (fn [[k v]] [(keyword k) v])) 
+       (into {}))
+  )  
+
+;;
+;; Status:   current future
+;; Use Case: invoked from an html form
+;; Purpose:  runs the host program
+;;           extracts options and arguments from the html request query-string
+;;           option strings are converted to symbols to avoid the inclusion of quote characters in the collection
+(defn- host
+  "Runs the host program.
+   Extracts options and arguments from the html request query-string.
+   Option strings are converted to symbols to avoid the inclusion of quote characters in the collection."
+  [request]
+  (println (:query-string request))
+  (prn (seq request))
+  (def args ["host "])
+
+  ;; Run the host program and create a ring response with it's output as the :body.
+  (->
+   (r/response
+    (with-out-str
+      (println "<html>")
+      (println "<head><link rel='stylesheet' href='/css/ip.css'></head>")
+      (println "<pre>")
+      ;;      (apply clojure.java.shell/sh (clojure.string/split command #" "))
+
+      ;; collect the components of the shell command and execute the command
+      (let [x
+            (apply shell/sh 
+                   (str/split
+                    (with-out-str
+                      ;; program
+                      (pr 'host)
+                      (print " ")
+
+                      ;; build the program argument string
+
+                      ;; convert the :option value strings to symbols
+                      ;; put the option symbols in the program argument string
+                      (doseq [x (get-query-map request)]
+                        (do
+                          (if (= (str(key x)) ":option")
+                            (do
+                              (pr (symbol (val x)))
+                              (print " ")
+                              )
+                            )
+                          )
+                        )
+                      ;; convert the :ip option string to a symbol
+                      ;; put the :ip option symbol at the end of the program argument string
+                      (doseq [x (get-query-map request)]
+                        (do
+                          (if (= (str(key x)) ":ip")
+                            (pr (symbol (val x)))
+                            )
+                          )
+                        )
+                      )
+                   ;; )
+                   #" " )
+                   )
+            
+            ]
+        (println (str (x :out)(x :err)))
+        )
+
+      (println "</pre></html>")))
+    (r/header "Content-Type" "text/html; charset=utf-8"))
+  )
+;;
+;; Status:   current future
+;; Use Case: invoked from an html form
+;; Purpose:  runs the host program
+;;           extracts options and arguments from the html request query-string
+;;           option strings are converted to symbols to avoid the inclusion of quote characters in the collection
+
+(defn- host-child
+  "Runs the host program.
+   Generates HTML output."
+  [request]
+
+  ;; Run the host program and return an html page formatting it's output..
+
+
+  (->
+   (with-out-str
+     (html-host-preamble)
+     ;;     (let [x (shell/sh "host" "-a" "ibm.com")]
+
+     (let [x (shell/sh "host" "-a" 
+                       ;; convert the :ip option string to a symbol
+                       (with-out-str
+                         (doseq [x (get-query-map request)]
+                           (do
+                             (if (= (str(key x)) ":ip")
+                               (pr (symbol (val x)))
+                               )
+                             )
+                           )
+                         ))]
+
+       (div33)
+       
+       (span_color "green")
+       (print "A")
+       (span_off)
+       (doseq [y (str/split (:out x) #"\n")]
+         (if (re-find #"\tA\t" y)
+           (do
+             (div_box)
+             (println (subs y (.indexOf y "IN")))
+             (div_off)
+             )))
+       (br)
+
+       
+       (span_color "green")
+       (print "TXT")
+       (span_off)
+       (println "<table style='border: 1px solid black;'>")
+       (doseq [y (str/split (:out x) #"\n")]
+         (if (re-find #"\tTXT\t" y)
+           (do
+             (println "<tr><td>")
+             (println (subs y (.indexOf y "IN")))
+             (println "</td></tr>")
+             )))
+       (println "</table>")
+       (br)
+
+       (span_color "green")
+       (print "LOC")
+       (span_off)
+       (println "<table style='border: 1px solid black;'>")
+       (doseq [y (str/split (:out x) #"\n")]
+         (if (re-find #"\tLOC\t" y)
+           (do
+             (println "<tr><td>")
+             (println (subs y (.indexOf y "IN")))
+             (println "</td></tr>")
+             )))
+       (println "</table>")
+       (br)
+       
+       (span_color "green")
+       (print "SOA")
+       (span_off)
+       (println "<table style='border: 1px solid black;'>")
+       (println "<tr><td>")
+       (doseq [y (str/split (:out x) #"\n")]
+         (if (re-find #"\tSOA\t" y)
+           (println (subs y (.indexOf y "IN")))
+           ))
+       (println "</td></tr>")
+       (println "</table>")
+       (br)
+
+       
+       (span_color "green")
+       (print "NS")
+       (span_off)
+       (println "<table style='border: 1px solid black;'>")
+       (doseq [y (str/split (:out x) #"\n")]
+         (if (re-find #"\tNS\t" y)
+           (do
+             (println "<tr><td>")
+             (println (subs y (.indexOf y "IN")))
+             (println "</td></tr>")
+             )))
+       (println "</table>")
+       (br)
+
+       
+       (span_color "green")
+       (print "SRV")
+       (span_off)
+       (println "<table style='border: 1px solid black;'>")
+       (doseq [y (str/split (:out x) #"\n")]
+         (if (re-find #"\tSRV\t" y)
+           (do
+             (println "<tr><td>")
+             (println (subs y (.indexOf y "IN")))
+             (println "</td></tr>")
+             )))
+       (println "</table>")
+       (br)
+
+       
+       (span_color "green")
+       (print "SPF")
+       (span_off)
+       (println "<table style='border: 1px solid black;'>")
+       (doseq [y (str/split (:out x) #"\n")]
+         (if (re-find #"\tSPF\t" y)
+           (do
+             (println "<tr><td>")
+             (println (subs y (.indexOf y "IN")))
+             (println "</td></tr>")
+             )))
+       (println "</table>")
+       (br)
+
+       
+       (span_color "green")
+       (print "CNAME")
+       (span_off)
+       (println "<table style='border: 1px solid black;'>")
+       (doseq [y (str/split (:out x) #"\n")]
+         (if (re-find #"\tCNAME\t" y)
+           (do
+             (println "<tr><td>")
+             (println (subs y (.indexOf y "IN")))
+             (println "</td></tr>")
+             )))
+       (println "</table>")
+       (br)
+
+       
+       (span_color "green")
+       (print "MX")
+       (span_off)
+       (println "<table style='border: 1px solid black;'>")
+       (doseq [y (str/split (:out x) #"\n")]
+         (if (re-find #"\tMX\t" y)
+           (do
+             (println "<tr><td>")
+             (println (subs y (.indexOf y "IN")))
+             (println "</td></tr>")
+             )))
+       (println "</table>")
+       (br)
+
+       
+       (span_color "green")
+       (print "AAAA")
+       (span_off)
+       (println "<table style='border: 1px solid black;'>")
+       (doseq [y (str/split (:out x) #"\n")]
+         (if (re-find #"\tAAAA\t" y)
+           (do
+             (println "<tr><td>")
+             (println (subs y (.indexOf y "IN")))
+             (println "</td></tr>")
+             )))
+       (println "</table>")
+       (br)
+
+       
+       (div_off)
+       (html_end)
+       ))))
+;;
+;; Status:   current future
+;; Use Case: invoked from an html form
+;; Purpose:  runs the whois program
+;;           extracts options and arguments from the html request query-string
+;;           option strings are converted to symbols to avoid the inclusion of quote characters in the collection
+(defn- whois
+  "Runs the whois program.
+   Extracts options and arguments from the html request query-string.
+   Option strings are converted to symbols to avoid the inclusion of quote characters in the collection."
+  [request]
+  (println (:query-string request))
+  (prn (seq request))
+  (def args ["whois "])
+
+  ;; Run the whois program and create a ring response with it's output as the :body.
+  (->
+   (r/response
+    (with-out-str
+      (println "<html>")
+      (println "<head><link rel='stylesheet' href='/css/ip.css'></head>")
+      (println "<pre>")
+      ;;      (apply clojure.java.shell/sh (clojure.string/split command #" "))
+
+      ;; collect the components of the shell command and execute the command
+      (let [x
+            (apply shell/sh 
+                   (str/split
+                    (with-out-str
+                      ;; program
+                      (pr 'whois)
+                      (print " ")
+
+                      ;; build the program argument string
+
+                      ;; convert the :option value strings to symbols
+                      ;; put the option symbols in the program argument string
+                      (doseq [x (get-query-map request)]
+                        (do
+                          (if (= (str(key x)) ":option")
+                            (do
+                              (pr (symbol (val x)))
+                              (print " ")
+                              )
+                            )
+                          )
+                        )
+                      ;; convert the :ip option string to a symbol
+                      ;; put the :ip option symbol at the end of the program argument string
+                      (doseq [x (get-query-map request)]
+                        (do
+                          (if (= (str(key x)) ":ip")
+                            (pr (symbol (val x)))
+                            )
+                          )
+                        )
+                      )
+                   ;; )
+                   #" " )
+                   )
+            
+            ]
+        (println (str (x :out)(x :err)))
+        )
+      (println "</pre></html>")))
+    (r/header "Content-Type" "text/html; charset=utf-8"))
+  )
+
+(defn- echo-form
+  [request]
+;;  (rmp/assoc-query-params request "UTF-8")
+  (->
+   (r/response
+    (with-out-str
+      (println "<html>")
+      (println "<head><link rel='stylesheet' href='/css/ip.css'></head>")
+      (println "<pre>")
+      ;; (println (str "query-string " (:query-string request)))
+      ;; (println (str "params " (:params request)))
+      (println (str "request<br> " (pprint request)))
+      (println "</pre></html>")))
+   (r/header "Content-Type" "text/html; charset=utf-8"))
+  )
+
+
+
+
 ;;;;;;;;; end of API ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -584,41 +976,37 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 (defroutes app
   (GET "/" request (homepage request))
   (GET "/clocss" request (clocss request))
-  (GET "/html/*.html" request (object-retrieval request))
-  (GET "/css/*.css" request (object-retrieval request))
-;;  (GET "/js/*.js" request (js request))
-  (GET "/js/*.js" request (object-retrieval request))
-  (POST "/echo-my-request" request (echo-my-request request))
-  (GET "/print-resource-file" request (print-resource-file request))
-;;  (GET "/simple" request (simple request))
-  (GET "/print-classpath" request (print-classpath))
-  (POST "/gen-diff" request (gen-diff request))
-  (GET "/ip-route" request (ip-route request))
-  (GET "/resource-test" request (resource-test request))
+  (GET "/html/*.html" request (html-file request))
+  (GET "/css/*.css" request (css request))
+  (GET "/js/*.js" request (js request))
   (GET "/images/*.jpg" request (object-retrieval request))
   (GET "/images/*.png" request (object-retrieval request))
+  (GET "/echo-form" request (echo-form request))
+
+  (GET "/host" request (host request))
+  (GET "/host-child" request (host-child request))
+  (GET "/whois" request (whois request))
+;;  (GET "/host-test" request (host-test request))
+  (GET "/echo-my-request" request (echo-my-request request))
+  (GET "/print-resource-file" request (print-resource-file request))
+  (GET "/print-classpath" request (print-classpath))
+  (POST "/gen-diff" request (gen-diff request))
   (GET "/wireless-network-activate" request (wireless-network-activate request))
   (GET "/wireless-network-deactivate" request (wireless-network-deactivate request))
   (GET "/openvpn-tunnel-start" request (openvpn-tunnel-start request))
   (GET "/openvpn-tunnel-stop" request (openvpn-tunnel-stop request))
   (GET "/iwconfig" request (reload_iwconfig request))
   (GET "/iwconfig-zenity" request (iwconfig-zenity request))
-  (GET "/ifconfig" request (ifconfig request))
   (GET "/netstat" request (netstat request))
-  (GET "/iwlist-scan-wlan0" request (iwlist-scan-wlan0 request))
-  (GET "/iwlist-scan-wlan1" request (iwlist-scan-wlan1 request))
   (GET "/pwd" request (pwd request))
   (GET "/reload_w" request (reload_w request))
-  (GET "/demo.htm" request (html-static-docs request))
-  (GET "/install-ath9k-module" request (install-ath9k-module request))
-  (GET "/remove-ath9k-module" request (remove-ath9k-module request))
-  (GET "/install-rtl8187-module" request (install-rtl8187-module request))
-  (GET "/remove-rtl8187-module" request (remove-rtl8187-module request))
-  (GET "/programming-clojure-2nd-edition" request (programming-clojure-2nd-edition request))
   (GET "/visualize-system-environment" request (visualize-system-environment request))
-
-  ;; these routes are not refered to in the 'html/page1.hiccup' file
   (GET "/ls-l" request (ls_l request))
+;;  (GET "/html/*.html" request (object-retrieval request))
+;;  (GET "/css/*.css" request (object-retrieval request))
+;;  (GET "/js/*.js" request (object-retrieval request))
+;;  (GET "/echo" request (echo request))
+;;  (GET "/simple" request (simple request))
 
   (resources "resources")
   ;; route not found
@@ -632,11 +1020,13 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   "Attempting, in a manner which might not be discernable from feeble, to start the ring server.\n/
   The server can be stopped in the repl with (.stop server)"
   []
+;;  (def site (wrap-defaults app site-defaults))
   (println "Attempting, in a manner which might not be discernable from feeble, to start the jetty server.\nThe server can be stopped in the repl with (.stop server)")
   (def server (jetty/run-jetty #'app {:port 7777 :join? false})))
 
 (defn -main
   []
+  (def args ["host"])
   (start-server)
   (println "..the server might be running at localhost:7777..")
   )
@@ -686,4 +1076,52 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 
 ;;         "</pre>"))
 
+
+;; no longer used, kept for an alternate future
+;; (defn- host-alternative-algorythm
+;;   [request]
+;;   ;;  (rmp/assoc-query-params request "UTF-8")
+;;   (println (:query-string request))
+;;   (prn (seq request))
+;;   (def args ["host"])
+;;   (->
+;;    (r/response
+;;     (with-out-str
+;;       (println "<html>")
+;;       (println "<head><link rel='stylesheet' href='/css/ip.css'></head>")
+;;       (println "<pre>")
+;;       ;;      (apply clojure.java.shell/sh (clojure.string/split command #" "))
+
+;;       (let [x
+;;             (apply shell/sh 
+;;                    (str/split
+;;                     (spit "host.txt" 
+;;                     (with-out-str
+;;                       (pr 'host)
+;;                       (doseq [x (get-query-map request)]
+;;                         (do
+;;                           (if (= (str(key x)) ":option-a")
+;;                             (pr (str " " (val x)))
+;;                             )
+;;                           )
+;;                         )
+;;                       (doseq [x (get-query-map request)]
+;;                         (do
+;;                           (if (= (str(key x)) ":ip")
+;;                             (pr (str " " (val x)))
+;;                             )
+;;                           )
+;;                         )
+;;                       )
+;;                     )
+;;                     )
+;;                    )
+            
+;;             ]
+;;         (println (str (x :out)(x :err)))
+;;         )
+;;       (println "</pre></html>"))
+;;     (r/header "Content-Type" "text/html; charset=utf-8"))
+;;    )
+;;   )
 

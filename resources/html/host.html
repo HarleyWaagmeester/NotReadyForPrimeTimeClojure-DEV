@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+  <body>
+
+    <h2>host lookup</h2>
+
+    <form name=host-input action=/host onsubmit="return Emptyvalidation()">
+      <label for="ip">ip address or hostname:</label><br>
+      <input type="text" id="ip-input" name="ip" value=""><br>
+      <span style="margin-top: 3px; padding: 2px; display: inline-block;">
+	options:
+      </span>
+      <br>
+      <span style="float: left; margin:3px; padding: 10px; border: 1px solid black; display: inline-block;">
+	<input type="checkbox" id="option-4" name="option" value="-4">
+	<label for="option-4"> -4 Use IPv4 only for query transport.</label><br>
+
+	<input type="checkbox" id="option-6" name="option" value="-6">
+	<label for="option-6"> -6 Use IPv6 only for query transport. See also the -4 option.</label><br>
+
+	<input type="checkbox" id="option-a" name="option" value="-a">
+	<label for="option-a"> -a All.  The  -a option is normally equivalent to -v -t ANY.</label><br>
+
+	<input type="checkbox" id="option-C" name="option" value="-C">
+	<label for="option-C"> -C Check consistency: host will query the SOA records for zone name</label><br>
+
+	<input type="checkbox" id="option-d" name="option" value="-d">
+	<label for="option-d"> -d Print debugging traces. Equivalent to the -v verbose option.</label><br>
+
+	<input type="checkbox" id="option-l" name="option" value="-l">
+	<label for="option-l"> -l List zone: The host command performs a zone transfer of zone name</label><br>
+
+	<input type="checkbox" id="option-r" name="option" value="-r">
+	<label for="option-r"> -r Non-recursive query</label><br>
+      </span>
+
+      <span style="float: left; margin: 3px; padding: 10px; border: 1px solid black; display: inline-block;">
+
+	<input type="checkbox" id="option-R" name="option" value="-R">
+	<label for="option-R"> -R number: Number of retries for UDP queries.</label><br>
+
+	<input type="checkbox" id="option-s" name="option" value="-s">
+	<label for="option-s"> -s: Do  not  send  the query to the next nameserver if SERVFAIL.</label><br>
+
+	<input type="checkbox" id="option-U" name="option" value="-U">
+	<label for="option-U"> -U: Use UDP for queries.</label><br>
+
+	<input type="checkbox" id="option-T" name="option" value="-T">
+	<label for="option-T"> -T: Use TCP for queries.</label><br>
+
+	<input type="checkbox" id="option-v" name="option" value="-v">
+	<label for="option-v"> -v: Verbose output. </label><br>
+
+	<input type="checkbox" id="option-V" name="option" value="-V">
+	<label for="option-V"> -V Print the version number and exit.</label><br>
+	<br>
+      </span>
+      <br>
+      <!-- <label for="lname">Last name:</label><br> -->
+      <!-- <input type="text" id="lname" name="lname" value="Doe"><br><br> -->
+      <input style="float: left; clear: both;" type="submit" value="Submit">
+    </form> 
+    <script src="/js/validate-ip-input.js"></script>
+  </body>
+</html>
