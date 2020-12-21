@@ -95,7 +95,9 @@
   "Clocss definition"
   [str]
   (if (= str "green")
-  (println "<span class=span_green>")))
+  (println "<span class=span_green>"))
+  (if (= str "blue")
+  (println "<span class=span_blue>")))
 
 (defn span_color_off
   [str]
@@ -107,6 +109,11 @@
   "Clocss definition"
   []
   (println"<div class='div33'>"))
+
+(defn div33_result
+  "Clocss definition"
+  []
+  (println"<div class='div33_result'>"))
 
 (defn div66
   "Clocss definition"
@@ -137,6 +144,16 @@
   "Clocss definition"
   []
   (println"<span>"))
+
+(defn span_fixed
+  "Clocss definition"
+  []
+  (println"<span class='span_fixed'>"))
+
+(defn span_result_fixed
+  "Clocss definition"
+  []
+  (println"<span class='span_result_fixed'>"))
 
 (defn span_box
   "Clocss definition"
@@ -172,6 +189,40 @@
   "Clocss definition"
   []
   (println"</div>"))
+
+(defn table
+  "Clocss definition"
+  []
+  (println"<table>"))
+
+(defn table_end
+  "Clocss definition"
+  []
+  (println"</table>"))
+(defn row
+  "Clocss definition"
+  []
+  (println"<tr>"))
+(defn row_end
+  "Clocss definition"
+  []
+  (println"</tr>"))
+(defn data
+  "Clocss definition"
+  []
+  (println"<td>"))
+(defn data_end
+  "Clocss definition"
+  []
+  (println"</td>"))
+(defn pre
+  "Clocss definition"
+  []
+  (println"<pre>"))
+(defn pre_end
+  "Clocss definition"
+  []
+  (println"</pre>"))
 
 
 
@@ -220,7 +271,7 @@
   (html-doc (make-html-page-from-hiccup-file filename)))
 
 
-(defn- make-auto-refresh-html-doc-from-hiccup-file
+(defn- make-auto-refresh-html-doc-from-hiccup-code
   [title seconds & body] 
   (html 
    (doctype :html4) 
@@ -386,7 +437,7 @@
 (defn- reload_w
   "Provides an automatic page reloading html formatted output of the system command 'w'."
   [request]
-  (make-auto-refresh-html-doc-from-hiccup-file     "/usr/bin/w"
+  (make-auto-refresh-html-doc-from-hiccup-code     "/usr/bin/w"
                                                    30
                                                    (w[])))
 
@@ -411,7 +462,7 @@
 (defn- reload_iwconfig
   "Provides an automatic page reloading html formatted output of the system command 'iwconfig'."
   [request]
-  (make-auto-refresh-html-doc-from-hiccup-file     "/sbin/iwconfig"
+  (make-auto-refresh-html-doc-from-hiccup-code     "/sbin/iwconfig"
                                                    3
                                                    (iwconfig[])))
 
@@ -609,7 +660,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   (println "<head><meta charset='utf-8'>")
   (println "<meta name='description' content='National Software Association Master Tools'>")
   (println "<meta name='author' content='National Software Association'>")
-  (println "<link rel='stylesheet' href='/css/ip.css'></head>")
+  (println "<link rel='stylesheet' href='/css/host-child.css'></head>")
 )
 
 ;;
@@ -626,74 +677,41 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
        (into {}))
   )  
 
-;;
-;; Status:   current future
-;; Use Case: invoked from an html form
-;; Purpose:  runs the host program
-;;           extracts options and arguments from the html request query-string
-;;           option strings are converted to symbols to avoid the inclusion of quote characters in the collection
-(defn- host
-  "Runs the host program.
-   Extracts options and arguments from the html request query-string.
-   Option strings are converted to symbols to avoid the inclusion of quote characters in the collection."
-  [request]
-  (println (:query-string request))
-  (prn (seq request))
-  (def args ["host "])
 
-  ;; Run the host program and create a ring response with it's output as the :body.
-  (->
-   (r/response
-    (with-out-str
-      (println "<html>")
-      (println "<head><link rel='stylesheet' href='/css/ip.css'></head>")
-      (println "<pre>")
-      ;;      (apply clojure.java.shell/sh (clojure.string/split command #" "))
+(defn- get-matches
+  "Search through the map of clojure.java.shell output for a matching substring delimited by tab characters and put the lines into html spans."
+  [output target]
+  (doseq [y (str/split (:out output) #"\n")]             ;; split the stdout from clojure.java.shell into seperate lines
+    (if (re-find (re-pattern (str"\t" target "\t")) y )  ;; search each line for a match
+      (do                                                ;; put lines with a match into html spans
+        (span)
+        (println (subs y (.indexOf y "IN")))
+        (span_off)
+        (br)))))
 
-      ;; collect the components of the shell command and execute the command
-      (let [x
-            (apply shell/sh 
-                   (str/split
-                    (with-out-str
-                      ;; program
-                      (pr 'host)
-                      (print " ")
+(defn- find-option-value-convert-to-symbol
+  "Convert the request query-map option value into a symbol."
+  [request sTerm]
+  (with-out-str
+    (doseq [x (get-query-map request)]
+      (do
+        (if (= (str(key x)) sTerm)
+          (pr (symbol (val x))))))))
 
-                      ;; build the program argument string
-
-                      ;; convert the :option value strings to symbols
-                      ;; put the option symbols in the program argument string
-                      (doseq [x (get-query-map request)]
-                        (do
-                          (if (= (str(key x)) ":option")
-                            (do
-                              (pr (symbol (val x)))
-                              (print " ")
-                              )
-                            )
-                          )
-                        )
-                      ;; convert the :ip option string to a symbol
-                      ;; put the :ip option symbol at the end of the program argument string
-                      (doseq [x (get-query-map request)]
-                        (do
-                          (if (= (str(key x)) ":ip")
-                            (pr (symbol (val x)))
-                            )
-                          )
-                        )
-                      )
-                   ;; )
-                   #" " )
-                   )
-            
-            ]
-        (println (str (x :out)(x :err)))
-        )
-
-      (println "</pre></html>")))
-    (r/header "Content-Type" "text/html; charset=utf-8"))
-  )
+(def RR ["A" "TXT" "LOC" "SOA" "NS" "SRV" "SPF" "CNAME" "MX" "AAAA"])
+(defn- digest-shell-output-generate-html
+  "Look for matching DNS Zone Resource Records and use CLOCSS to generate html formatting."
+  [x]
+  (with-out-str
+    (doseq [rr RR]
+      (do
+        (span_color "green")
+        (print rr)
+        (span_off)
+        (br)
+        (get-matches x rr)
+        (br)
+        ))))
 ;;
 ;; Status:   current future
 ;; Use Case: invoked from an html form
@@ -703,179 +721,49 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 
 (defn- host-child
   "Runs the host program.
-   Generates HTML output."
+   Uses the CLOCSS language to generate HTML formatted output."
   [request]
 
-  ;; Run the host program and return an html page formatting it's output..
+  ;; Run the host program and return an html page.
 
 
   (->
    (with-out-str
      (html-host-preamble)
-     ;;     (let [x (shell/sh "host" "-a" "ibm.com")]
-
-     (let [x (shell/sh "host" "-a" 
-                       ;; convert the :ip option string to a symbol
-                       (with-out-str
-                         (doseq [x (get-query-map request)]
-                           (do
-                             (if (= (str(key x)) ":ip")
-                               (pr (symbol (val x)))
-                               )
-                             )
-                           )
-                         ))]
-
-       (div33)
-       
-       (span_color "green")
-       (print "A")
+     (div33)
+     (span_result_fixed)
+     (println "<H3>National Software Association // Master Tools</H3>")
+     (span_off)
+     (div_off)
+     (let [ip (find-option-value-convert-to-symbol request ":ip")
+           ns (find-option-value-convert-to-symbol request ":nameserver")] 
+       (div33_result)
+       (span_color "blue")
+       (print (str "host -a " ip))
        (span_off)
-       (doseq [y (str/split (:out x) #"\n")]
-         (if (re-find #"\tA\t" y)
+       (br)
+
+       (span_color "blue")
+       (print (str "using nameserver: " ns ))
+       (span_off)
+       (br)
+
+       ;; host -a  <ip | hostname> <nameserver | "">, ip or hostname, name server or ""   
+       (let [x (shell/sh "host" "-a" ip ns)]
+
+         (if (= 1 (:exit x))
            (do
-             (div_box)
-             (println (subs y (.indexOf y "IN")))
-             (div_off)
-             )))
-       (br)
+             (br)
+             (span)
+             (pre)
+             (if (re-find #"NOTIMP" (:out x))
+               (println (str "Type of request not implemented.\n" (:out x)))
+               (println (:err x) (:out x)))
+             (pre_end)
+             (span_off)
+             (div_off))
+           (println (digest-shell-output-generate-html x))))))))
 
-       
-       (span_color "green")
-       (print "TXT")
-       (span_off)
-       (println "<table style='border: 1px solid black;'>")
-       (doseq [y (str/split (:out x) #"\n")]
-         (if (re-find #"\tTXT\t" y)
-           (do
-             (println "<tr><td>")
-             (println (subs y (.indexOf y "IN")))
-             (println "</td></tr>")
-             )))
-       (println "</table>")
-       (br)
-
-       (span_color "green")
-       (print "LOC")
-       (span_off)
-       (println "<table style='border: 1px solid black;'>")
-       (doseq [y (str/split (:out x) #"\n")]
-         (if (re-find #"\tLOC\t" y)
-           (do
-             (println "<tr><td>")
-             (println (subs y (.indexOf y "IN")))
-             (println "</td></tr>")
-             )))
-       (println "</table>")
-       (br)
-       
-       (span_color "green")
-       (print "SOA")
-       (span_off)
-       (println "<table style='border: 1px solid black;'>")
-       (println "<tr><td>")
-       (doseq [y (str/split (:out x) #"\n")]
-         (if (re-find #"\tSOA\t" y)
-           (println (subs y (.indexOf y "IN")))
-           ))
-       (println "</td></tr>")
-       (println "</table>")
-       (br)
-
-       
-       (span_color "green")
-       (print "NS")
-       (span_off)
-       (println "<table style='border: 1px solid black;'>")
-       (doseq [y (str/split (:out x) #"\n")]
-         (if (re-find #"\tNS\t" y)
-           (do
-             (println "<tr><td>")
-             (println (subs y (.indexOf y "IN")))
-             (println "</td></tr>")
-             )))
-       (println "</table>")
-       (br)
-
-       
-       (span_color "green")
-       (print "SRV")
-       (span_off)
-       (println "<table style='border: 1px solid black;'>")
-       (doseq [y (str/split (:out x) #"\n")]
-         (if (re-find #"\tSRV\t" y)
-           (do
-             (println "<tr><td>")
-             (println (subs y (.indexOf y "IN")))
-             (println "</td></tr>")
-             )))
-       (println "</table>")
-       (br)
-
-       
-       (span_color "green")
-       (print "SPF")
-       (span_off)
-       (println "<table style='border: 1px solid black;'>")
-       (doseq [y (str/split (:out x) #"\n")]
-         (if (re-find #"\tSPF\t" y)
-           (do
-             (println "<tr><td>")
-             (println (subs y (.indexOf y "IN")))
-             (println "</td></tr>")
-             )))
-       (println "</table>")
-       (br)
-
-       
-       (span_color "green")
-       (print "CNAME")
-       (span_off)
-       (println "<table style='border: 1px solid black;'>")
-       (doseq [y (str/split (:out x) #"\n")]
-         (if (re-find #"\tCNAME\t" y)
-           (do
-             (println "<tr><td>")
-             (println (subs y (.indexOf y "IN")))
-             (println "</td></tr>")
-             )))
-       (println "</table>")
-       (br)
-
-       
-       (span_color "green")
-       (print "MX")
-       (span_off)
-       (println "<table style='border: 1px solid black;'>")
-       (doseq [y (str/split (:out x) #"\n")]
-         (if (re-find #"\tMX\t" y)
-           (do
-             (println "<tr><td>")
-             (println (subs y (.indexOf y "IN")))
-             (println "</td></tr>")
-             )))
-       (println "</table>")
-       (br)
-
-       
-       (span_color "green")
-       (print "AAAA")
-       (span_off)
-       (println "<table style='border: 1px solid black;'>")
-       (doseq [y (str/split (:out x) #"\n")]
-         (if (re-find #"\tAAAA\t" y)
-           (do
-             (println "<tr><td>")
-             (println (subs y (.indexOf y "IN")))
-             (println "</td></tr>")
-             )))
-       (println "</table>")
-       (br)
-
-       
-       (div_off)
-       (html_end)
-       ))))
 ;;
 ;; Status:   current future
 ;; Use Case: invoked from an html form
@@ -980,6 +868,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   (GET "/css/*.css" request (css request))
   (GET "/js/*.js" request (js request))
   (GET "/images/*.jpg" request (object-retrieval request))
+  (GET "/images/*.jpeg" request (object-retrieval request))
   (GET "/images/*.png" request (object-retrieval request))
   (GET "/echo-form" request (echo-form request))
 
@@ -1125,3 +1014,71 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 ;;    )
 ;;   )
 
+;;
+;; Status:   current future
+;; Use Case: invoked from an html form
+;; Purpose:  runs the host program
+;;           extracts options and arguments from the html request query-string
+;;           option strings are converted to symbols to avoid the inclusion of quote characters in the collection
+;; (defn- host
+;;   "Runs the host program.
+;;    Extracts options and arguments from the html request query-string.
+;;    Option strings are converted to symbols to avoid the inclusion of quote characters in the collection."
+;;   [request]
+;;   (println (:query-string request))
+;;   (prn (seq request))
+;;   (def args ["host "])
+
+;;   ;; Run the host program and create a ring response with it's output as the :body.
+;;   (->
+;;    (r/response
+;;     (with-out-str
+;;       (println "<html>")
+;;       (println "<head><link rel='stylesheet' href='/css/ip.css'></head>")
+;;       (println "<pre>")
+;;       ;;      (apply clojure.java.shell/sh (clojure.string/split command #" "))
+
+;;       ;; collect the components of the shell command and execute the command
+;;       (let [x
+;;             (apply shell/sh 
+;;                    (str/split
+;;                     (with-out-str
+;;                       ;; program
+;;                       (pr 'host)
+;;                       (print " ")
+
+;;                       ;; build the program argument string
+
+;;                       ;; convert the :option value strings to symbols
+;;                       ;; put the option symbols in the program argument string
+;;                       (doseq [x (get-query-map request)]
+;;                         (do
+;;                           (if (= (str(key x)) ":option")
+;;                             (do
+;;                               (pr (symbol (val x)))
+;;                               (print " ")
+;;                               )
+;;                             )
+;;                           )
+;;                         )
+;;                       ;; convert the :ip option string to a symbol
+;;                       ;; put the :ip option symbol at the end of the program argument string
+;;                       (doseq [x (get-query-map request)]
+;;                         (do
+;;                           (if (= (str(key x)) ":ip")
+;;                             (pr (symbol (val x)))
+;;                             )
+;;                           )
+;;                         )
+;;                       )
+;;                    ;; )
+;;                    #" " )
+;;                    )
+            
+;;             ]
+;;         (println (str (x :out)(x :err)))
+;;         )
+
+;;       (println "</pre></html>")))
+;;     (r/header "Content-Type" "text/html; charset=utf-8"))
+;;   )

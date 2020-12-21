@@ -2,7 +2,6 @@
 
 function Emptyvalidation(hostForm)
 {
-    console.log("in Emptyvalidation");
     var hostForm = document.forms["host-input"];
     if (hostForm.ip.value.length == 0) 
     {
@@ -11,7 +10,8 @@ function Emptyvalidation(hostForm)
     }
     else
     {
-	hostForm.style.background = 'White';
+	hostForm.ip.style.background = 'White';
+	hostForm.nameserver.style.background = 'White';
 	return true;
     }
 }
