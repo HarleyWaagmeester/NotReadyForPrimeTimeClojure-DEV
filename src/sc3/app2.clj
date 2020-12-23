@@ -651,6 +651,12 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
     ;;  (r/response (with-out-str (println x)))
     (-> (r/response "") (r/content-type "text/javascript")  (r/status 200))))
 
+(defn now [] (new java.util.Date))
+
+(defn log
+  "simple logging facility"
+  [s]
+  (spit "app2.log" (str (now) "\n" s "\n\n") :append true))
 
 (defn- html-host-preamble
   "Print a html preamble."
@@ -677,17 +683,17 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
        (into {}))
   )  
 
+(def db-a (atom []))
+(def db-txt (atom []))
+(def db-loc (atom []))
+(def db-soa (atom []))
+(def db-ns (atom []))
+(def db-srv (atom []))
+(def db-spf (atom []))
+(def db-cname (atom []))
+(def db-mx (atom []))
+(def db-aaaa (atom []))
 
-(defn- get-matches
-  "Search through the map of clojure.java.shell output for a matching substring delimited by tab characters and put the lines into html spans."
-  [output target]
-  (doseq [y (str/split (:out output) #"\n")]             ;; split the stdout from clojure.java.shell into seperate lines
-    (if (re-find (re-pattern (str"\t" target "\t")) y )  ;; search each line for a match
-      (do                                                ;; put lines with a match into html spans
-        (span)
-        (println (subs y (.indexOf y "IN")))
-        (span_off)
-        (br)))))
 
 (defn- find-option-value-convert-to-symbol
   "Convert the request query-map option value into a symbol."
@@ -698,19 +704,27 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
         (if (= (str(key x)) sTerm)
           (pr (symbol (val x))))))))
 
-(def RR ["A" "TXT" "LOC" "SOA" "NS" "SRV" "SPF" "CNAME" "MX" "AAAA"])
+(defn- get-matches
+  "Search through the map of clojure.java.shell output for a matching substring delimited by tab characters and put the lines into html spans."
+  [shell-output rr]
+  (log "in get-matches")
+  (doseq [y (str/split (:out shell-output) #"\n")]             ;; split the stdout from clojure.java.shell into seperate lines
+   (if (re-find (re-pattern (str"\t" (name (key rr)) "\t")) y )  ;; search each line for a match
+      (do                                                ;; put lines with a match into html spans
+        (log "in get-matches re-find do")
+        (swap! (nth rr 1) conj (subs y (.indexOf y "IN")))
+        ))))
+
+(def RR  {:A db-a :TXT db-txt :LOC db-loc :SOA db-soa :NS db-ns :SRV db-srv :SPF db-spf :CNAME db-cname :MX db-mx :AAAA db-aaaa})
 (defn- digest-shell-output-generate-html
   "Look for matching DNS Zone Resource Records and use CLOCSS to generate html formatting."
   [x]
+  (log "in digest")
   (with-out-str
     (doseq [rr RR]
       (do
-        (span_color "green")
-        (print rr)
-        (span_off)
-        (br)
+        (log "before get-matches")
         (get-matches x rr)
-        (br)
         ))))
 ;;
 ;; Status:   current future
@@ -724,45 +738,49 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
    Uses the CLOCSS language to generate HTML formatted output."
   [request]
 
+  (log "\n\nin host-child =============================================================================")
   ;; Run the host program and return an html page.
 
-
+  ;; code is data, data is code
   (->
-   (with-out-str
-     (html-host-preamble)
-     (div33)
-     (span_result_fixed)
-     (println "<H3>National Software Association // Master Tools</H3>")
-     (span_off)
-     (div_off)
-     (let [ip (find-option-value-convert-to-symbol request ":ip")
-           ns (find-option-value-convert-to-symbol request ":nameserver")] 
-       (div33_result)
-       (span_color "blue")
-       (print (str "host -a " ip))
-       (span_off)
-       (br)
+;;   (with-out-str
+     ;; (html-host-preamble)
+     ;; (div33)
+     ;; (span_result_fixed)
+     ;; (println "<H3>National Software Association // Master Tools</H3>")
+     ;; (span_off)
+     ;; (div_off)
+     ;; (let [ip (find-option-value-convert-to-symbol request ":ip")
+     ;;       ns (find-option-value-convert-to-symbol request ":nameserver")] 
+     ;;   (div33_result)
+     ;;   (span_color "blue")
+     ;;   (print (str "host -a " ip))
+     ;;   (span_off)
+     ;;   (br)
 
-       (span_color "blue")
-       (print (str "using nameserver: " ns ))
-       (span_off)
-       (br)
+     ;;   (span_color "blue")
+     ;;   (print (str "using nameserver: " ns ))
+     ;;   (span_off)
+     ;;   (br)
 
        ;; host -a  <ip | hostname> <nameserver | "">, ip or hostname, name server or ""   
-       (let [x (shell/sh "host" "-a" ip ns)]
+;;       (let [x (shell/sh "host" "-a" ip ns)]
+       (let [x (shell/sh "host" "-a" "ibm.com" "127.0.0.1")]
 
          (if (= 1 (:exit x))
            (do
-             (br)
-             (span)
-             (pre)
+             ;; (br)
+             ;; (span)
+             ;; (pre)
              (if (re-find #"NOTIMP" (:out x))
                (println (str "Type of request not implemented.\n" (:out x)))
                (println (:err x) (:out x)))
-             (pre_end)
-             (span_off)
-             (div_off))
-           (println (digest-shell-output-generate-html x))))))))
+             ;; (pre_end)
+             ;; (span_off)
+             ;; (div_off))
+             )
+             (println (digest-shell-output-generate-html x))))))
+;;;;;;;;;;;;;;;;;;;;;  ))
 
 ;;
 ;; Status:   current future
@@ -872,7 +890,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   (GET "/images/*.png" request (object-retrieval request))
   (GET "/echo-form" request (echo-form request))
 
-  (GET "/host" request (host request))
+;;  (GET "/host" request (host request))
   (GET "/host-child" request (host-child request))
   (GET "/whois" request (whois request))
 ;;  (GET "/host-test" request (host-test request))
