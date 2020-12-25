@@ -668,12 +668,26 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   (println "<meta name='author' content='National Software Association'>")
   (println "<link rel='stylesheet' href='/css/host-child.css'></head>")
 )
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;; Run the host program and use a database for operational persistence. ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;
-;; Status:   current future
-;; Use Case: invoked as a helper
-;; Purpose:  creates a map of options and arguments from the html request query-string
-;;
+;; create the database
+
+(def db-a (atom []))
+(def db-aaaa (atom []))
+(def db-cname (atom []))
+(def db-host (atom []))
+(def db-loc (atom []))
+(def db-mx (atom []))
+(def db-ns (atom []))
+(def db-soa (atom []))
+(def db-spf (atom []))
+(def db-srv (atom []))
+(def db-txt (atom []))
+
+(def RR  (sorted-map :A db-a :AAAA db-aaaa :CNAME db-cname :LOC db-loc :MX db-mx :NS db-ns :SOA db-soa :SPF db-spf :SRV db-srv :TXT db-txt))
+
 (defn get-query-map
   "Creates a map of options and arguments from the html request query-string."
   [request]
@@ -683,104 +697,119 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
        (into {}))
   )  
 
-(def db-a (atom []))
-(def db-txt (atom []))
-(def db-loc (atom []))
-(def db-soa (atom []))
-(def db-ns (atom []))
-(def db-srv (atom []))
-(def db-spf (atom []))
-(def db-cname (atom []))
-(def db-mx (atom []))
-(def db-aaaa (atom []))
 
 
 (defn- find-option-value-convert-to-symbol
-  "Convert the request query-map option value into a symbol."
-  [request sTerm]
+  "Convert the request query-string option value into a symbol."
+  [request search_term]
   (with-out-str
     (doseq [x (get-query-map request)]
       (do
-        (if (= (str(key x)) sTerm)
+        (if (= (str(key x)) search_term)
           (pr (symbol (val x))))))))
 
-(defn- get-matches
-  "Search through the map of clojure.java.shell output for a matching substring delimited by tab characters and put the lines into html spans."
-  [shell-output rr]
-  (log "in get-matches")
-  (doseq [y (str/split (:out shell-output) #"\n")]             ;; split the stdout from clojure.java.shell into seperate lines
-   (if (re-find (re-pattern (str"\t" (name (key rr)) "\t")) y )  ;; search each line for a match
-      (do                                                ;; put lines with a match into html spans
-        (log "in get-matches re-find do")
-        (swap! (nth rr 1) conj (subs y (.indexOf y "IN")))
-        ))))
+(defn- put-matches-into-databases
+  "Search through the map of clojure.java.shell output for a matching substring delimited by tab characters and put the lines into the database."
+  [shell-output rr host]
 
-(def RR  {:A db-a :TXT db-txt :LOC db-loc :SOA db-soa :NS db-ns :SRV db-srv :SPF db-spf :CNAME db-cname :MX db-mx :AAAA db-aaaa})
-(defn- digest-shell-output-generate-html
-  "Look for matching DNS Zone Resource Records and use CLOCSS to generate html formatting."
-  [x]
-  (log "in digest")
-  (with-out-str
-    (doseq [rr RR]
-      (do
-        (log "before get-matches")
-        (get-matches x rr)
-        ))))
+  (doseq [y (str/split (:out shell-output) #"\n")]                  ;; split the stdout from clojure.java.shell into seperate lines
+    (if (re-find (re-pattern (str "^" host)) y )                    ;; select the lines that begin with a match for the host
+      (if (re-find (re-pattern (str"\t" (name (key rr)) "\t")) y )  ;; search each selected line for a matching resource record entry
+        (do                                                         ;; put lines with a match into the databases
+          (swap! (nth rr 1) conj (subs y (.indexOf y "IN")))
+          )))))
+
+
+(defn- digest-shell-output-generate-databases
+  "Get the DNS Zone Resource Records that are desired and invoke a helper to populate the databases."
+  [x host]
+  
+  (swap! db-host conj host)                  ;; enter the hostname into the database
+  (doseq [rr RR]
+    (do
+      (put-matches-into-databases x rr host)
+      )))
+
+(defn create-web-page
+  "Create a web page with CLOCSS displaying the databases."
+ [request RR]
+ (with-out-str
+   (html-host-preamble)
+   (div33)
+   (span_result_fixed)
+   (println "<H3>National Software Association // Master Tools</H3>")
+   (span_off)
+   (div_off)
+   (let [ip (find-option-value-convert-to-symbol request ":ip")
+         ns (find-option-value-convert-to-symbol request ":nameserver")] 
+     (div33_result)
+     (span_color "blue")
+     (print (str "host -a " ip))
+     (span_off)
+     (br)
+
+     (span_color "blue")
+     (print (str "using nameserver: " ns ))
+     (span_off)
+     (br))
+   
+     (doseq [rr RR]
+       (let [x rr]
+         (br)
+         (span_color "green")
+         (println (name (nth x 0)))
+         (span_off)
+         (doseq [y @(nth x 1)]
+           (br)
+           (span)
+           (println y)
+           (span_off)
+           )))))
+
+
+
+
+
 ;;
-;; Status:   current future
+;; Verb:     current future
 ;; Use Case: invoked from an html form
 ;; Purpose:  runs the host program
 ;;           extracts options and arguments from the html request query-string
 ;;           option strings are converted to symbols to avoid the inclusion of quote characters in the collection
 
 (defn- host-child
-  "Runs the host program.
-   Uses the CLOCSS language to generate HTML formatted output."
+  "Run the host program. Populate the databases."
   [request]
 
   (log "\n\nin host-child =============================================================================")
-  ;; Run the host program and return an html page.
+  (log request)
 
+  ;;Zero out the databases if already populated.
+  (if (boolean (ns-resolve (find-ns 'sc3.app2) 'RR)) 
+    (doseq [x RR]
+      (reset! (nth x 1) nil)))
+  ;;
+  ;; Run the host program.
   ;; code is data, data is code
+  ;; host -a  <ip | hostname> <nameserver | "">, ip or hostname, name server or ""   
+   (let [host (find-option-value-convert-to-symbol request ":ip")
+         nameserver (find-option-value-convert-to-symbol request ":nameserver")] 
+     (let [x (shell/sh "host" "-a" host nameserver)]
+
+       (if (= 1 (:exit x))
+         (do
+           (if (re-find #"NOTIMP" (:out x))                                ;; Handle the special case of the server response "type not implemented".
+             (println (str "Type of request not implemented.\n" (:out x)))
+             (println (:err x) (:out x)))
+           )
+         (digest-shell-output-generate-databases x host))                   ;; Populate the databases.
+       ))
   (->
-;;   (with-out-str
-     ;; (html-host-preamble)
-     ;; (div33)
-     ;; (span_result_fixed)
-     ;; (println "<H3>National Software Association // Master Tools</H3>")
-     ;; (span_off)
-     ;; (div_off)
-     ;; (let [ip (find-option-value-convert-to-symbol request ":ip")
-     ;;       ns (find-option-value-convert-to-symbol request ":nameserver")] 
-     ;;   (div33_result)
-     ;;   (span_color "blue")
-     ;;   (print (str "host -a " ip))
-     ;;   (span_off)
-     ;;   (br)
-
-     ;;   (span_color "blue")
-     ;;   (print (str "using nameserver: " ns ))
-     ;;   (span_off)
-     ;;   (br)
-
-       ;; host -a  <ip | hostname> <nameserver | "">, ip or hostname, name server or ""   
-;;       (let [x (shell/sh "host" "-a" ip ns)]
-       (let [x (shell/sh "host" "-a" "ibm.com" "127.0.0.1")]
-
-         (if (= 1 (:exit x))
-           (do
-             ;; (br)
-             ;; (span)
-             ;; (pre)
-             (if (re-find #"NOTIMP" (:out x))
-               (println (str "Type of request not implemented.\n" (:out x)))
-               (println (:err x) (:out x)))
-             ;; (pre_end)
-             ;; (span_off)
-             ;; (div_off))
-             )
-             (println (digest-shell-output-generate-html x))))))
-;;;;;;;;;;;;;;;;;;;;;  ))
+   (r/response (create-web-page request RR))                               ;; Create the web page.
+   (r/content-type "text/html")  (r/status 200)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;
 ;; Status:   current future
