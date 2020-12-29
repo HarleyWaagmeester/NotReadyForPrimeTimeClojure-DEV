@@ -831,11 +831,25 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 ;; Purpose:  runs the whois program
 ;;           extracts options and arguments from the html request query-string
 ;;           option strings are converted to symbols to avoid the inclusion of quote characters in the collection
+
+(defn html-whois-preamble
+  "Print a html preamble."
+  []
+  (println "<!doctype html>")
+  (println "<html lang=en>")
+  (println "<head><meta charset='utf-8'>")
+  (println "<meta name='description' content='National Software Association Master Tools'>")
+  (println "<meta name='author' content='National Software Association'>")
+  (println "<link rel='stylesheet' href='/css/host-child.css'></head>")
+  (println "<pre">)
+  )
+
 (defn whois
   "Runs the whois program.
-   Extracts options and arguments from the html request query-string.
-   Option strings are converted to symbols to avoid the inclusion of quote characters in the collection."
+   Extracts options and arguments from the html request query-string."
+
   [request]
+
   (println (:query-string request))
   (prn (seq request))
   (def args ["whois "])
@@ -844,9 +858,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   (->
    (r/response
     (with-out-str
-      (println "<html>")
-      (println "<head><link rel='stylesheet' href='/css/ip.css'></head>")
-      (println "<pre>")
+
       ;;      (apply clojure.java.shell/sh (clojure.string/split command #" "))
 
       ;; collect the components of the shell command and execute the command
