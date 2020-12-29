@@ -11,10 +11,10 @@
       <h2>host lookup</h2>
       <br>
       <div style="margin-left: 15px;">
-	<form name=host-input action=/host-child onsubmit="return Emptyvalidation()">
+	<form name=host-input action=/host-child onsubmit="return Hostvalidation()">
 	  <span>
-	    <label for="ip">ip address or hostname:</label><br>
-	    <input class="css-input tooltip" type="text" id="ip-input" name="ip" value="" placeholder="ip or hostname"><br>
+	    <label for="ip">hostname or ip address:</label><br>
+	    <input class="css-input tooltip" type="text" id="ip-input" name="ip" value="" placeholder="hostname or ip"><br>
 	  </span>
 	  <br>
 	  <span>
@@ -28,6 +28,6 @@
 	</form>
       </div>
     </div>
-      <script src="/js/validate-ip-input.js"></script>
+      <script src="/js/host-input-validate.js"></script>
   </body>
 </html>

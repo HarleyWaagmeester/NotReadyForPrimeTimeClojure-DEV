@@ -22,7 +22,7 @@ function _create_window(name,content,dimensions)
 
 //resources/js/dhtmlwindow.js
 var dhtmlwindow={
-imagefiles:['images/min.gif', 'images/close.gif', 'images/restore.gif', 'images/resize.gif'], //Path to 4 images used by script, in that order
+imagefiles:['/images/min.gif', '/images/close.gif', '/images/restore.gif', '/images/resize.gif'], //Path to 4 images used by script, in that order
 ajaxbustcache: true, //Bust caching when fetching a file via Ajax?
 ajaxloadinghtml: '<b>Loading Page. Please wait...</b>', //HTML to show while window fetches Ajax Content?
 

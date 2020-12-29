@@ -35,12 +35,45 @@ width: 100%;
 
 .drag-contentarea{ /*CSS for Content Display Area div*/
 border-top: 1px solid brown;
-background-image: url("../images/blue-orb-11.jpg");
+background-image: url("../images/blue-orb-11-01.png");
 /*background-color: white;*/
 color: black;
 height: 150px;
 padding: 2px;
 overflow: auto;
+}
+
+.div_relative {
+    position: relative;
+    /* left:30%; */
+    top:20%;
+    /* border: 1px solid black; */
+    /* margin: 3px; */
+    /* height: 1em; */
+    /* width: 33%; */
+    /* padding: 10px; */
+    /* border-radius:24px; */
+    /* box-shadow: -24px 5px 5px 0px rgba(42,42,42,.75); */
+    text-align: center;
+    /* background-image: url('/images/header.jpeg'); */
+    color: gold;
+    /* height: 5em; */
+}
+.span_relative {
+    position: relative;
+    left:30%;
+    top:20%;
+    /* border: 1px solid black; */
+    /* margin: 3px; */
+    /* height: 1em; */
+    /* width: 33%; */
+    /* padding: 10px; */
+    /* border-radius:24px; */
+    /* box-shadow: -24px 5px 5px 0px rgba(42,42,42,.75); */
+    text-align: center;
+    /* background-image: url('/images/header.jpeg'); */
+    color: gold;
+    /* height: 5em; */
 }
 
 .drag-statusarea{ /*CSS for Status Bar div (includes resizearea)*/
