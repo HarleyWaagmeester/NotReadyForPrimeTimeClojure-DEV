@@ -683,7 +683,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 ;; Associate databases with search keys.
 (def RR  (sorted-map :A db-a :AAAA db-aaaa :CNAME db-cname :LOC db-loc :MX db-mx :NS db-ns :PTR db-ptr :SOA db-soa :SPF db-spf :SRV db-srv :TXT db-txt))
 
-(defn html-host-child-preamble
+(defn host-child-html-preamble
   "Print a html preamble."
   []
   (println "<!doctype html>")
@@ -747,7 +747,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   "Create a web page with CLOCSS and CLOHTML to display the databases."
  [request RR]
  (with-out-str
-   (html-host-child-preamble)
+   (host-child-html-preamble)
    (div33)
    (span_result_fixed)
    (println "<H3>National Software Association // Master Tools</H3>")
@@ -832,7 +832,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 ;;           extracts options and arguments from the html request query-string
 ;;           option strings are converted to symbols to avoid the inclusion of quote characters in the collection
 
-(defn html-whois-preamble
+(defn whois-html-preamble
   "Print a html preamble."
   []
   (println "<!doctype html>")
@@ -841,7 +841,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   (println "<meta name='description' content='National Software Association Master Tools'>")
   (println "<meta name='author' content='National Software Association'>")
   (println "<link rel='stylesheet' href='/css/host-child.css'></head>")
-  (println "<pre">)
+  (println "<pre>")
   )
 
 (defn whois
@@ -858,7 +858,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   (->
    (r/response
     (with-out-str
-
+      (whois-html-preamble)
       ;;      (apply clojure.java.shell/sh (clojure.string/split command #" "))
 
       ;; collect the components of the shell command and execute the command
