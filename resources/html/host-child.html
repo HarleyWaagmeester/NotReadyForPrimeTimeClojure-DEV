@@ -11,7 +11,7 @@
       <h2>host lookup</h2>
       <br>
       <div style="margin-left: 15px;">
-	<form name=host-input action=/host-child onsubmit="return Hostvalidation()">
+	<form name=host-input action=/host-child onsubmit="return Hostvalidation('div_hidden')">
 	  <span>
 	    <label for="ip">hostname or ip address:</label><br>
 	    <input class="css-input tooltip" type="text" id="ip-input" name="ip" value="" placeholder="hostname or ip"><br>
@@ -27,7 +27,11 @@
 	  </span>
 	</form>
       </div>
-    </div>
-      <script src="/js/host-input-validate.js"></script>
+      <div id=div_hidden class="div_hidden">
+	hidden message div (dev status)
+      </div>
+      </div>
+
+    <script src="/js/host-child.js"></script>
   </body>
 </html>

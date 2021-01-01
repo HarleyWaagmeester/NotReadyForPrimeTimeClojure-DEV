@@ -81,6 +81,11 @@
   []
   (println"<div class='div_box'>"))
 
+(defn div_hidden
+  "Clocss definition"
+  []
+  (println"<div class='div_hidden'>"))
+
 (defn div_off
   "Clocss definition"
   []
@@ -679,9 +684,21 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 (def db-spf (atom []))
 (def db-srv (atom []))
 (def db-txt (atom []))
-
+(def db-locked (atom false))
+  
 ;; Associate databases with search keys.
 (def RR  (sorted-map :A db-a :AAAA db-aaaa :CNAME db-cname :LOC db-loc :MX db-mx :NS db-ns :PTR db-ptr :SOA db-soa :SPF db-spf :SRV db-srv :TXT db-txt))
+
+(defn lock-databases
+  "voluntary database security"
+  []
+  (reset! db-locked true))
+
+(defn unlock-databases
+  "voluntary database security"
+  []
+  (reset! db-locked false))
+
 
 (defn host-child-html-preamble
   "Print a html preamble."
@@ -691,8 +708,15 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   (println "<head><meta charset='utf-8'>")
   (println "<meta name='description' content='National Software Association Master Tools'>")
   (println "<meta name='author' content='National Software Association'>")
-  (println "<link rel='stylesheet' href='/css/host-child.css'></head>")
-)
+  (println "<link rel='stylesheet' href='/css/host-child.css'></head>"))
+
+(defn database-busy
+  "database busy notification"
+  []
+  (host-child-html-preamble)
+  (div)
+  (println "databases are locked, please try again")
+  (div_off))
 
 (defn get-query-map
   "Creates a map of options and arguments from the html request query-string."
@@ -700,8 +724,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   (->> (str/split (:query-string request) #"&") 
        (map #(str/split % #"=")) 
        (map (fn [[k v]] [(keyword k) v])) 
-       (into {}))
-  )  
+       (into {})))  
 
 
 
@@ -718,6 +741,8 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   "Search through the map of clojure.java.shell output for a matching substring delimited by tab characters and put the lines into the database."
   [shell-output rr host]
 
+  (lock-databases)
+
   ;; Split the stdout from clojure.java.shell into seperate lines.
   (doseq [y (str/split (:out shell-output) #"\n")]
     
@@ -729,7 +754,9 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 
               ;; Put substrings of matching lines into the databases.
               (do
+                (lock-databases)
                 (swap! (nth rr 1) conj (subs y (.indexOf y "IN")))
+                (unlock-databases)
                 )))))
 
 
@@ -780,17 +807,31 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
            )))))
 
 
-
-
+(defn query-nameservers
+  "Walk the nameserver tree."
+  [host]
+  (with-out-str
+    (doseq [ns @db-ns]
+      (if (re-find (re-pattern (str"\tNS\t")) ns )
+        (let [x  (shell/sh "host" "-a" host (nth (str/split ns #"\t") 2))]
+          (println (str "<pre>" "Response From NS : " (nth (str/split ns #"\t") 2) "\n" (:err x) (:out x) "</pre>")))))))
 
 ;;
-;; Verb:     current future
+;; Verb:     current future implements space type recurse
 ;; Use Case: invoked from an html form
 ;; Purpose:  runs the host program
+;;           ------------ entry point ----------------
 ;;           extracts options and arguments from the html request query-string
+;;           populates the databases
+;;           walks the tree of nameservers
+;;           generates html formatted output
 
 (defn host-child
-  "Run the host program. Populate the databases. Create the web page."
+"          extracts options and arguments from the html request query-string
+           populates the databases
+           walks the tree of nameservers
+           generates html formatted output"
+
   [request]
 
   (log "\n\nin host-child =============================================================================")
@@ -799,9 +840,14 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   ;; Zero out the databases.
   (if (boolean (ns-resolve (find-ns 'sc3.app2) 'RR)) 
     (do
-      (reset! db-host nil)
-      (doseq [x RR]
-      (reset! (nth x 1) nil))))
+      (if (false? @db-locked)
+        (do
+        (lock-databases)
+        (reset! db-host nil)
+        (doseq [x RR]
+          (reset! (nth x 1) nil))
+        (unlock-databases))
+        (database-busy))))
   ;;
   ;; Run the host program.
   ;; host -a  <ip | hostname> <nameserver | "">, ip or hostname, name server or ""   
@@ -817,10 +863,11 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
              (println (:err x) (:out x)))
            )
          (digest-shell-output-generate-databases x host))                   ;; Populate the databases.
-       ))
   (->
-   (r/response (create-web-page request RR))                                ;; Create the web page.
-   (r/content-type "text/html")  (r/status 200)))
+   (let [s (query-nameservers (find-option-value-convert-to-symbol request ":ip"))]
+   (r/response (str (create-web-page request RR) s)))
+   ;; Create the web page.
+   (r/content-type "text/html")  (r/status 200))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
