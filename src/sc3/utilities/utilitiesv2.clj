@@ -140,27 +140,27 @@
 
 
 
-(defn disect003
-  " Disects a clojure source file into a collection of beginning and ending positions of the forms. "
-  ;; start position, stack accumulator, collection as vector accumulator, fstring as slurped file
-  [file]
-;;  (view collection)
-  (loop [ start 0 i 0  stack 0 collection [] fstring (slurp file)]
-    (view collection)
-    (recur (inc i) (inc i) (+ stack (comp1 (nth fstring i)) (if (= 0 (comp2 (nth fstring i))) (conj collection [start i])) fstring))))
+;; (defn disect003
+;;   " Disects a clojure source file into a collection of beginning and ending positions of the forms. "
+;;   ;; start position, stack accumulator, collection as vector accumulator, fstring as slurped file
+;;   [file]
+;; ;;  (view collection)
+;;   (loop [ start 0 i 0  stack 0 collection [] fstring (slurp file)]
+;;     (view collection)
+;;     (recur (inc i) (inc i) (+ stack (comp1 (nth fstring i)) (if (= 0 (comp2 (nth fstring i))) (conj collection [start i])) fstring))))
 
-(defn disect004
-  [file]
-  (let fstring (slurp file)
-       (loop [x 1]
-         (println "x= " x)
-         (cond
-           (> x 10) (println "ending at " x )
-           (even? x) (recur (* 2 x))
-           :else (recur (+ x 1))
+;; (defn disect004
+;;   [file]
+;;   (let fstring (slurp file)
+;;        (loop [x 1]
+;;          (println "x= " x)
+;;          (cond
+;;            (> x 10) (println "ending at " x )
+;;            (even? x) (recur (* 2 x))
+;;            :else (recur (+ x 1))
            
            
-           ))))
+;;            ))))
 
 
 
