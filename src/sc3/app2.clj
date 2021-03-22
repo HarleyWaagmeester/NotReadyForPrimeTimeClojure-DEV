@@ -25,7 +25,7 @@
   (:require [clojure.java.shell :refer [sh] :as shell])
   (:require [clojure.java.io :as io])
   (:require [clojure.string :as str])
-  (:require [sc3.utilities.utilities :refer :all])
+  (:require [sc3.utilities.utilitiesv2 :refer :all])
   (:require [sc3.proc :as process])
   (:gen-class))
 
@@ -432,7 +432,7 @@
           (str (x :out)(x :err)))
         "</pre>"))
 
-(defn pwd
+(defn ppwd
   [request]
   (list "<pre>"
         (let [x (shell/sh "pwd")]
@@ -599,14 +599,15 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   [request]
   (make-html-document-with-hiccup-file (io/resource "html/page1.hiccup")))
 
-(defn homepage
-  [request]
-  ;;(homepage_port1[])
-  (homepage_port1[])
-  ;;  (port2 [])
-  ;;  (port2)
-  ;;  (port3)
-  )
+
+;; (defn homepage
+;;   [request]
+;;   ;;(homepage_port1[])
+;;   (homepage_explosion[])
+;;   ;;  (port2 [])
+;;   ;;  (port2)
+;;   ;;  (port3)
+;;   )
 
 
 (defn port3
@@ -632,7 +633,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   {:body "(defroutes app ...) route doesn't exist\n404 error. File not found"})
 
 (defn object-retrieval
-  "Given a map of :uri 'filename', return a ring response map."
+  "Given a map of :uri  'filename', return a ring response map."
   [request]
 ;;  (doseq [keyval request] (prn keyval))
   (->
@@ -643,6 +644,14 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   "Read a html text file and return it as a ring response."
   [request]
   (if-let [ x (io/resource (subs (str(get request :uri))1))]
+    (r/response  (slurp x))
+    ;;  (r/response (with-out-str (println x)))
+    (-> (r/response "") (r/content-type "text/html")  (r/status 200))))
+
+(defn html-file-explicit
+  "Read a html text file and return it as a ring response."
+  [filename]
+  (if-let [ x (io/resource filename)]
     (r/response  (slurp x))
     ;;  (r/response (with-out-str (println x)))
     (-> (r/response "") (r/content-type "text/html")  (r/status 200))))
@@ -692,11 +701,13 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 (defn lock-databases
   "voluntary database security"
   []
+  (log "databases locked")
   (reset! db-locked true))
 
 (defn unlock-databases
   "voluntary database security"
   []
+  (log "databases unlocked")
   (reset! db-locked false))
 
 
@@ -741,8 +752,6 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   "Search through the map of clojure.java.shell output for a matching substring delimited by tab characters and put the lines into the database."
   [shell-output rr host]
 
-  (lock-databases)
-
   ;; Split the stdout from clojure.java.shell into seperate lines.
   (doseq [y (str/split (:out shell-output) #"\n")]
     
@@ -754,8 +763,10 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 
               ;; Put substrings of matching lines into the databases.
               (do
+                (log "put-matches-into-databases: locking databases")
                 (lock-databases)
                 (swap! (nth rr 1) conj (subs y (.indexOf y "IN")))
+                (log "put-matches-into-databases: unlocking databases")
                 (unlock-databases)
                 )))))
 
@@ -807,7 +818,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
            )))))
 
 
-(defn query-nameservers
+(defn walk-nameservers
   "Walk the nameserver tree."
   [host]
   (with-out-str
@@ -842,10 +853,12 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
     (do
       (if (false? @db-locked)
         (do
-        (lock-databases)
+          (log "locking databases in host-child")
+          (lock-databases)
         (reset! db-host nil)
         (doseq [x RR]
           (reset! (nth x 1) nil))
+        (log "unlocking databases in host-child")
         (unlock-databases))
         (database-busy))))
   ;;
@@ -858,16 +871,16 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 
        (if (= 1 (:exit x))
          (do
-           (if (re-find #"NOTIMP" (:out x))                                ;; Handle the special case of the server response "type not implemented".
+           (if (re-find #"NOTIMP" (:out x))                                ;; Handle the special case of the DNS server response "type not implemented".
              (println (str "Type of request not implemented.\n" (:out x)))
              (println (:err x) (:out x)))
            )
          (digest-shell-output-generate-databases x host))                   ;; Populate the databases.
   (->
-   (let [s (query-nameservers (find-option-value-convert-to-symbol request ":ip"))]
+   (let [s (walk-nameservers (find-option-value-convert-to-symbol request ":ip"))]
    (r/response (str (create-web-page request RR) s)))
    ;; Create the web page.
-   (r/content-type "text/html")  (r/status 200))))
+   (r/content-type "text/html")  (r/status 200)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -982,7 +995,8 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; (defoutes app...) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defroutes app
-  (GET "/" request (homepage request))
+  (GET "/" request (html-file-explicit "html/index.html"))
+  (GET "/notreadyforprimetime" request (homepage_port1 request))
   (GET "/clocss" request (clocss request))
   (GET "/html/*.html" request (html-file request))
   (GET "/css/*.css" request (css request))
@@ -991,6 +1005,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   (GET "/images/*.jpeg" request (object-retrieval request))
   (GET "/images/*.png" request (object-retrieval request))
   (GET "/images/*.gif" request (object-retrieval request))
+  (GET "/videos/*.mp4" request (object-retrieval request))
   (GET "/echo-form" request (echo-form request))
 
 ;;  (GET "/host" request (host request))
@@ -1035,7 +1050,7 @@ port22=_create_window('divbox', 'div', 'menu-data', 'port #2', 'width=450px,heig
   (def server (jetty/run-jetty #'app {:port 7777 :join? false})))
 
 (defn -main
-  []
+  [& args]
   (def args ["host"])
   (start-server)
   (println "..the server might be running at localhost:7777..")

@@ -1,0 +1,25 @@
+<html>
+  <head>
+  </head>
+  <body style='background-color:black;'>
+
+
+    <div id="vid" style="display:flex;justify-content:center">
+      <video autoplay muted width="100%">
+
+        <source src="videos/bluecool_EDIT.mp4"
+                type="video/mp4">
+      </video>
+    </div>
+
+    <script>
+      var x = document.querySelector("video");      
+      function vid_ended_listener(event) {
+          x.style.display = "none";
+          document.body.style.background = "white";
+          window.location.href = "http://nsa.international:7777/notreadyforprimetime";
+      }
+      x.addEventListener("ended", vid_ended_listener, false);
+    </script>
+  </body>
+</html>

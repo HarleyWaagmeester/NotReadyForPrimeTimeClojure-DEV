@@ -7,13 +7,13 @@ function Hostvalidation(id)
     if (hostForm.ip.value.length == 0) 
     {
 	hostForm.ip.style.background =   'Yellow'; 
-	putMessageInDiv(id);
 	return false;  
     }
     else
     {
 	hostForm.ip.style.background = 'White';
 	hostForm.nameserver.style.background = 'White';
+	putMessageInDiv(id);
 	return true;
     }
 }
@@ -23,6 +23,6 @@ function Hostvalidation(id)
 
 function putMessageInDiv(id)
 {
-//    console.log(id);
+    console.log(id);
     document.getElementById(id).innerHTML = "retrieving data from nameservers";
 }

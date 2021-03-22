@@ -1,0 +1,1 @@
+https://spin.js.org/#?lines=12&length=38&width=17&radius=45&scale=0.75&corners=1&speed=0.5&rotate=0&animation=spinner-line-shrink&direction=1&color=%23ffffff&fadeColor=transparent&top=47&left=47&shadow=0%200%201px%20transparent&zIndex=2000000000&className=spinner&position=absolute

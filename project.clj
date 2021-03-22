@@ -8,31 +8,33 @@
 
   :dependencies [
                  ;;                 [slamhound "RELEASE"]
-                 [org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojure "1.10.1"]
 ;;                 [javax.servlet/servlet-api "2.5"]
 ;;                 [ring/ring  "1.8.2"]
                  [ring/ring-defaults  "0.3.2"]
                  [ring/ring-jetty-adapter "1.8.2"]
-                 [ring/ring-core "1.8.2"]
+;;                 [ring/ring-core "1.8.2"]
                  [hiccup "2.0.0-alpha2"]
                  [compojure "1.6.2"]
                  [hickory "0.7.1"]
+                 [org.clojure/java.classpath "1.0.0"]
                  ;;                 ^:replace [org.clojure/tools.nrepl "RELEASE"]
                  ;;                 [org.clojure/tools.nrepl "0.2.10"]
                  ;;                 [org.clojure/tools.nrepl "0.2.6"]
                  ;;                 [prismatic/dommy "1.1.0"]
-                 ;;                 [org.clojure/tools.namespace "0.2.12-SNAPSHOT"]
+                 [org.clojure/tools.namespace "1.1.0"]
                  ]
   ;;:ring {:handler sc3.app2/site}  
 
-  :prep-tasks ^:replace []
-  :repositories {"sonatype-oss-public"
-                 "https://oss.sonatype.org/content/groups/public/"}
+  :main sc3.app2
+;;  :aot :all
+  :aot [sc3.app2]
+
+;;  :prep-tasks ^:replace []
+;;  :repositories {"sonatype-oss-public"
+  ;;               "https://oss.sonatype.org/content/groups/public/"}
 
   ;; :profiles {:dev {:dependencies [[clj-ns-browser "1.3.1"]]}}
-
-  :main sc3.app2
-  :aot [sc3.app2]
   ;;  :plugins [ [cider/cider-nrepl "RELEASE"]
   ;;  :plugins [[cider/cider-nrepl "0.9.0-SNAPSHOT"]]
   ;; :plugins [ [cider/cider-nrepl "0.10.0-SNAPSHOT"]

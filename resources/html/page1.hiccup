@@ -15,6 +15,7 @@ _create_window('NR4PrimeT', 'port1-menu-data', 'width=370px, height=350px, left=
  [:div {:class "div_relative"}
          [:a {:href "https://github.com/harleywaagmeester/NotReadyForPrimeTimeClojure-DEV"}  "This project"]
   ]
+ [:br]
  [:div {:class "div_relative"}
          [:a {:href "http://nsa.international:7777/html/host-child.html"}  "host resolver"]
   ]

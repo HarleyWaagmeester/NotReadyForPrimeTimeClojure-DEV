@@ -1,4 +1,4 @@
-(ns sc3.utilities.utilities
+(ns sc3.utilities.utilitiesv2
   (:require [clojure.java.io :as io])
   (:require (hiccup
              [core :refer :all]
@@ -6,6 +6,9 @@
              [util :refer :all]
              [element :refer :all]
              [page :refer :all]))
+  (:require [clojure.java.classpath :as cp])
+  (:require [clojure.string :as str])
+  (:require [clojure.java.shell :refer [sh] :as shell])
   ;;(:require 
   ;; [dommy.core :as dommy])
   )
@@ -18,6 +21,11 @@
   (println "util-ns-regex-search [string] ::\n\tPrint any namespaces that contain the given tag pattern. i.e. #\"(abc)\".")
   (println "util-ns-publics [string] ::\n\tPrint the public symbols for the given namespace.")
   (println "--warning WIP-- util-find-objects-in-directory [{:directory <string> :re-tag<#\"regex-pattern\">...}] :: \n\t Find objects in a directory matching a search pattern."))
+
+(defn classpath
+  []
+  (cp/classpath))
+
 
 (defn view 
   "Expand the sequence returned by the given function, and wrap println around it."
@@ -34,10 +42,187 @@
   [pattern]
   (doseq [x (all-ns)] (if (re-find pattern (str x)) (println x))))
 
-(defn util-ns-publics
-  "Print the public symbols for the given namespace."
+(defn util-ns-publics-sorted
+  "Print the sorted public symbols for the given namespace."
   [ns]
-  (doseq [x (ns-publics ns)] (println x)))
+  (map #(take 1 %) (sort(ns-publics ns))))
+
+(defn split-file-on-newline
+  [filename]
+;;  (filter string?
+          (for [s (str/split (slurp filename) #"\n")]s))
+
+(defn split-coll-on-newline
+  [coll]
+;;  (filter string?
+          (for [s (str/split (str coll) #"\n")]s))
+
+(defn split-file-on-close-paren
+  [filename]
+;;  (filter string?
+  (for [s (str/split (slurp filename)  #"\)")]s))
+
+(defn split-coll-on-close-paren
+  [coll]
+;;  (filter string?
+          (for [s (str/split coll  #"\n")]s))
+
+
+(defn test001
+  []
+  (let [s  (slurp "src/sc3/utilities/test.clj")]
+    (loop [open 0 index 0] 
+      (if (compare (nth s index) \()
+        (println (inc open)))
+        (recur (inc open) (inc index)))))
+
+(defn disect001
+  " Disects a clojure source file into a collection of beginning and ending positions of the forms. "
+  ;; start position, stack atom as integer accumulator, collection as vector accumulator, fstring as slurped file, stop as flag
+  [start stack collection fstring stop]
+  (println (str "==========\n" "start=" start))
+  (view collection)
+  (println (type start))
+  (reset! stack 0)
+  (if (= stop 0)
+    (do
+      (doseq [i (range start (count fstring))]
+        (do
+          (if (= 0 (compare (nth fstring i) \())
+            (do
+              (swap! stack inc)
+              (println (str "inc stack=" @stack)))) 
+        (if (= 0 (compare (nth fstring i) \)))
+            (do
+              (swap! stack dec)
+              (println (str "dec stack=" @stack))))
+        (if (= @stack 0)
+          (do
+            (println i)
+            ;;            (if (= i (count s))
+            (disect001 (inc i) stack (conj collection [start i]) fstring (if (= i (count fstring)) (inc stop))))))
+        )))collection)
+
+(defn disect002
+  " Disects a clojure source file into a collection of beginning and ending positions of the forms. "
+  ;; start position, stack accumulator, collection as vector accumulator, fstring as slurped file
+  [start stack collection fstring depth]
+  (println (str "==========\n" "start=" start))
+;;  (view collection)
+  (println "depth=" depth)
+  (doseq [i (range start (count fstring))]
+    (do
+      (if (= 0 (compare (nth fstring i) \())
+        (do
+          (println (str "inc'd stack=" (inc stack)))
+          (disect002 (inc i) (inc stack) (conj collection [start i]) fstring (inc depth))))
+      
+      (if (= 0 (compare (nth fstring i) \)))
+        (do
+          (println (str "dec'd stack=" (dec stack)))
+          (disect002 (inc i) (dec stack) (conj collection [start i]) fstring (dec depth))))
+      (if (= stack 0)
+        collection))))
+
+(defn comp1
+  [c]
+  (let [r 0]
+    (if (= 0 (compare c \())
+    (inc r)
+  0)))
+
+(defn comp2
+  [c]
+  (let [r 0]
+    (if (= 0 (compare c \)))
+    (inc r)
+  0)))
+
+
+
+(defn disect003
+  " Disects a clojure source file into a collection of beginning and ending positions of the forms. "
+  ;; start position, stack accumulator, collection as vector accumulator, fstring as slurped file
+  [file]
+;;  (view collection)
+  (loop [ start 0 i 0  stack 0 collection [] fstring (slurp file)]
+    (view collection)
+    (recur (inc i) (inc i) (+ stack (comp1 (nth fstring i)) (if (= 0 (comp2 (nth fstring i))) (conj collection [start i])) fstring))))
+
+(defn disect004
+  [file]
+  (let fstring (slurp file)
+       (loop [x 1]
+         (println "x= " x)
+         (cond
+           (> x 10) (println "ending at " x )
+           (even? x) (recur (* 2 x))
+           :else (recur (+ x 1))
+           
+           
+           ))))
+
+
+
+    ;; (do
+    ;;   (if (= 0 (compare (nth fstring i) \())
+    ;;     (do
+    ;;       (println (str "inc'd stack=" (inc stack)))
+    ;;       (disect002 (inc i) (inc stack) (conj collection [start i]) fstring (inc depth))))
+      
+    ;;   (if (= 0 (compare (nth fstring i) \)))
+    ;;     (do
+    ;;       (println (str "dec'd stack=" (dec stack)))
+    ;;       (disect002 (inc i) (dec stack) (conj collection [start i]) fstring (dec depth))))
+    ;;   (if (= stack 0)
+    ;;     collection))))
+                   
+  
+
+;; (defn get-requires
+;;   "Look through a file for :require forms."
+;;   [filename]
+;;   (filter string?
+;;           (for [s (str/split (str (split-file-on-newline filename)) #"\)")]
+;;             (if-not (re-find (re-pattern "^\\s*;")s)
+;;               (if (re-find (re-pattern ":require") s)s)))))
+
+(defn get-requires
+  "Look through a file for :require forms."
+  [filename]
+;;  (filter string?
+           (for [s (for [x (split-coll-on-close-paren (split-file-on-newline "src/sc3/utilities/test.clj"))]x)]
+            (if-not (re-find (re-pattern "^\\s*;")s)
+              (if (re-find (re-pattern ":require") s)s))))
+
+(defn get-require-filenames-single-vector
+            [filename]
+            (filter string?
+                    (for [s (get-requires filename)]
+                      (if (re-find (re-pattern "^\\s*\\(\\s*:require\\s*\\[")s)
+                        (let [start (str/index-of s "[") end (str/index-of s " " start)]
+                          (subs s ( inc start) end))))))
+
+(defn get-require-filenames-multiple-vector
+            [filename]
+            (filter string?
+                    (for [s (get-requires filename)]
+                      (if (re-find (re-pattern "^\\s*\\(\\s*:require\\s*\\(\\s*[a-z A-Z]\\s*\\n")s)
+                        (let [start (str/index-of s "\\s*\\(") end (str/index-of s "\\n" start)]
+                          (subs s ( inc start) end))))))
+
+(defn pwd
+  []
+  (shell/sh "pwd"))  
+
+
+;; (defn get-requires
+;;   "Look through a file for :require forms."
+;;   [filename]
+;;   (filter string?
+;;           (for [s (str/split (slurp "src/sc3/app2.clj") #"\n")]
+;;             (if-not (re-find (re-pattern "^\\s*;")s)
+;;               (if (re-find (re-pattern ":require") s)s)))))
 
 ;; (defn util-find-files-in-directory
 ;;   "Find the files in a directory matching the given re-tag. :: (util-find-files-in-directory directory re-tag)"
@@ -87,19 +272,19 @@
 (defn get-directory-objects
   "Reads directory entries."
   [directory]
-  ((.listFiles (io/file directory)))directory)
+  (.listFiles (io/file directory)))
 
 (defn filter-dirs 
-  []
-  (filter some? (map #(if (.isDirectory %)(.getPath %)) get-directory-objects)))
+  [directory]
+  (filter some? (map #(if (.isDirectory %)(.getPath %)) (get-directory-objects directory))))
 
 (defn filter-files
-  []
-  (filter some? (map #(if (.isFile %)(.getPath %)) get-directory-objects)))
+  [directory]
+  (filter some? (map #(if (.isFile %)(.getPath %)) (get-directory-objects directory))))
 
 (defn filter-filesize
-  []
-  (filter some? (map #(if (.isFile %)(.length %)) get-directory-objects)))
+  [directory]
+  (filter some? (map #(if (.isFile %)(.length %)) (get-directory-objects directory))))
 
 ;; (defn filter-dirs 
 ;;   [z]
@@ -138,7 +323,7 @@
 ;; temporary settings
 (def css-path "/home/sy/GIT/CLOJURE-PROJECTS/sc3/src/sc3/utilities/")
 (def js-path "/home/sy/GIT/CLOJURE-PROJECTS/sc3/src/sc3/utilities/")
-(get-directory-objects-into-global-directory-objects-var "/home/sy/GIT/CLOJURE-PROJECTS/sc3/src/sc3")
+;;(get-directory-objects-into-global-directory-objects-var "/home/sy/GIT/CLOJURE-PROJECTS/sc3/src/sc3")
 
 ;;;; Oh my this is so ancient. Modern browsers use a css solution for alternating row colors via something like this:
 ;;;;                                       .row:nth-child(even) {
